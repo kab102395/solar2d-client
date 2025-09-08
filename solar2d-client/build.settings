@@ -1,0 +1,35 @@
+-- build.settings (iOS + Android)
+settings = {
+  orientation = {
+    default   = "portrait",
+    supported = { "portrait" }
+  },
+
+  plugins = {
+    ["plugin.websockets"] = { publisherId = "com.coronalabs" },
+    -- or, if needed:
+    -- ["plugin.websockets"] = { publisherId = "com.solar2d" },
+  },
+
+  iphone = {
+    plist = {
+      NSAppTransportSecurity = {
+        NSAllowsArbitraryLoads = true  -- DEV ONLY
+      }
+    }
+  },
+
+  android = {
+    usesPermissions = {
+      "android.permission.INTERNET",
+    },
+
+    -- DEV ONLY: allow http:// and ws:// (cleartext).
+    usesCleartextTraffic = true,
+
+    -- Wire a small network security config (file shown below).
+    applicationChildElements = {
+      [[ <network-security-config android:resource="@xml/network_security_config" /> ]]
+    },
+  },
+}

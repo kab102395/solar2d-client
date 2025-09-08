@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+  <!-- DEV: trust cleartext for your LAN host(s). You can narrow this with domain-config. -->
+  <base-config cleartextTrafficPermitted="true" />
+</network-security-config>
