@@ -1,21 +1,50 @@
 settings =
 {
-  orientation = { default = "portrait", supported = { "portrait" } },
-
-  -- IMPORTANT: use the official singular plugin. Do NOT list the legacy one here,
-  -- otherwise device builds fail if the builder can’t fetch it.
-  plugins = {
-    ["plugin.websocket"] = { publisherId = "com.coronalabs" },
+  orientation =
+  {
+    default   = "portrait",
+    supported = { "portrait" }
   },
 
-  iphone = {
-    plist = {
-      -- Dev: allow http:// and ws:// to your LAN server.
-      NSAppTransportSecurity = {
-        NSAllowsArbitraryLoads = true,   -- simplest for local dev
-        NSAllowsLocalNetworking = true,  -- iOS 14+ local network flag
+  -- iOS plugin(s)
+  plugins =
+  {
+    ["plugin.websocket"] =
+    {
+      publisherId = "com.coronalabs",
+      supportedPlatforms = { iphone = true } -- don't try to load on mac-sim
+    },
+
+    -- If your iOS *device build* log says “plugin not found”, comment the block above
+    -- and use this legacy id instead, then rebuild:
+    -- ["plugin.websockets"] =
+    -- {
+    --   publisherId = "com.coronalabs",
+    --   supportedPlatforms = { iphone = true }
+    -- },
+  },
+
+  iphone =
+  {
+    plist =
+    {
+      -- DEV ONLY: allow http/ws to your LAN Spring Boot server.
+      NSAppTransportSecurity =
+      {
+        NSAllowsArbitraryLoads = true
       },
-      NSLocalNetworkUsageDescription = "Connects to local Java dev server.",
+
+      -- iOS 14+ local network privacy text (shows on first LAN connect).
+      NSLocalNetworkUsageDescription = "Allow this app to connect to your local development server over Wi-Fi.",
+
+      -- Optional: if you later do Bonjour/mDNS discovery, list services here:
+      -- NSBonjourServices = { "_http._tcp", "_ws._tcp" },
     }
-  }
+  },
+
+  -- If you later target Android, you can add:
+  -- android =
+  -- {
+  --   usesCleartextTraffic = true -- dev only
+  -- },
 }

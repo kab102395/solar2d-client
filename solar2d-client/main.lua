@@ -17,7 +17,9 @@ local timer = timer
 local transition = transition
 ---@diagnostic disable-next-line: undefined-global
 local Runtime = Runtime
-
+---@diagnostic disable-next-line: undefined-global
+---@diagnostic disable-next-line: undefined-global
+local system = system
 local os = os
 local math = math
 local table = table
@@ -44,7 +46,7 @@ local unpack = unpack or table.unpack
 -- CONFIG
 ----------------------------------------------------------------
 -- CHANGE THIS to your Windows machine's LAN IP when testing on a real iPhone:
-local HOST = "192.168.1.xx"
+local HOST = "192.168.1.45"
 local PORT = 8080
 local BASE  = ("http://%s:%d"):format(HOST, PORT)
 local WSURL = ("ws://%s:%d/ws"):format(HOST, PORT)
@@ -55,16 +57,25 @@ local WSURL = ("ws://%s:%d/ws"):format(HOST, PORT)
 local playerId = nil
 local ws, wsOpen = nil, false
 
+-- Optional pure-Lua WebSocket fallback (works without any plugin)
+local okPure, WS_PURE = pcall(require, "ws_pure")
+
 ---@type WebSocketLib|nil
 local WSLib
 
 do
-  local ok1, mod = pcall(require, "plugin.websocket")      -- singular (official)
-  if ok1 then
-    WSLib = mod
+  local env = system.getInfo("environment")
+  if env == "device" then
+    local ok1, mod = pcall(require, "plugin.websocket")      -- singular (official)
+    if ok1 then
+      WSLib = mod
+    else
+      local ok2, mod2 = pcall(require, "plugin.websockets")  -- legacy
+      if ok2 then WSLib = mod2 end
+    end
   else
-    local ok2, mod2 = pcall(require, "plugin.websockets")  -- legacy
-    if ok2 then WSLib = mod2 end
+    -- On simulator: skip requiring plugins to avoid warnings
+    WSLib = nil
   end
 end
 
@@ -378,6 +389,11 @@ end
 local STRATS = { 1, 2, 3, 4, 5 }
 
 local function connectWithStrategy(idx)
+  if not WSLib then
+    log("WS plugin library not present; using polling")
+    if transportMode ~= "WS" then startPolling() end
+    return
+  end
   _wsTryIndex = idx
   local mode = STRATS[idx]
   log(("WS try %d"):format(mode))
@@ -467,6 +483,19 @@ local function openWS()
     return
   end
   if not wsPluginOk then
+    if okPure and WS_PURE and transportMode ~= "POLL" then
+      log("WS plugin missing → using pure-Lua WebSocket client")
+      ws = WS_PURE.new()
+      hookWsEvents()
+      local okConn, err = pcall(function() return ws:connect(WSURL) end)
+      if not okConn then
+        log("WS(pure) connect threw:", tostring(err))
+        if transportMode ~= "WS" then startPolling() end
+      else
+        if ws.autoPump then pcall(function() ws:autoPump(true) end) end
+      end
+      return
+    end
     log("WS plugin not available; " .. (transportMode == "WS" and "WS-only mode selected." or "switching to HTTP."))
     if transportMode == "WS" then
       toast("WS plugin missing")
