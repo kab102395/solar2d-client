@@ -35,7 +35,7 @@ settings =
       },
 
       -- iOS 14+ local network privacy text (shows on first LAN connect).
-      NSLocalNetworkUsageDescription = "Allow this app to connect to your local development server over Wi-Fi.",
+      -- NSLocalNetworkUsageDescription = "Allow this app to connect to your local development server over Wi-Fi.",
 
       -- Optional: if you later do Bonjour/mDNS discovery, list services here:
       -- NSBonjourServices = { "_http._tcp", "_ws._tcp" },
