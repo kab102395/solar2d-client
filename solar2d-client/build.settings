@@ -1,35 +1,21 @@
--- build.settings (iOS + Android)
-settings = {
-  orientation = {
-    default   = "portrait",
-    supported = { "portrait" }
-  },
+settings =
+{
+  orientation = { default = "portrait", supported = { "portrait" } },
 
+  -- IMPORTANT: use the official singular plugin. Do NOT list the legacy one here,
+  -- otherwise device builds fail if the builder can’t fetch it.
   plugins = {
-    ["plugin.websockets"] = { publisherId = "com.coronalabs" },
-    -- or, if needed:
-    -- ["plugin.websockets"] = { publisherId = "com.solar2d" },
+    ["plugin.websocket"] = { publisherId = "com.coronalabs" },
   },
 
   iphone = {
     plist = {
+      -- Dev: allow http:// and ws:// to your LAN server.
       NSAppTransportSecurity = {
-        NSAllowsArbitraryLoads = true  -- DEV ONLY
-      }
+        NSAllowsArbitraryLoads = true,   -- simplest for local dev
+        NSAllowsLocalNetworking = true,  -- iOS 14+ local network flag
+      },
+      NSLocalNetworkUsageDescription = "Connects to local Java dev server.",
     }
-  },
-
-  android = {
-    usesPermissions = {
-      "android.permission.INTERNET",
-    },
-
-    -- DEV ONLY: allow http:// and ws:// (cleartext).
-    usesCleartextTraffic = true,
-
-    -- Wire a small network security config (file shown below).
-    applicationChildElements = {
-      [[ <network-security-config android:resource="@xml/network_security_config" /> ]]
-    },
-  },
+  }
 }
